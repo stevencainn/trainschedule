@@ -43,20 +43,37 @@ $(".btn-submit").on("click", function (event) {
 
 });
 
-//firebase watcher and initial loader. HINT: this code behaves similarly to .on("value")
+//firebase watcher and initial loader.
 database.ref().on("child_added", function(childSnapshot){
-    //log everything coming out of snapshot
-    console.log(childSnapshot.val().name);
-    console.log(childSnapshot.val().destination);
-    console.log(childSnapshot.val().startTime);
-    console.log(childSnapshot.val().frequency);
-
-
-    //appends data back to table 
-    $("tbody").append("<tr><td>" + childSnapshot.val().name + "</td><td>" + childSnapshot.val().destination + "</td><td>" + childSnapshot.val().startTime + "</td><<td>" + childSnapshot.val().frequency + "</td></tr>");
-}, function(errorObject){
-    console.log("Errors handled: " + errorObject.code);
+    //set childSnapshot to variables
+    var childName = childSnapshot.val().name;
+    var childDestination = childSnapshot.val().destination;
+    var childStartTime = childSnapshot.val().startTime;
+    var childFrequency = childSnapshot.val().frequency;
+    console.log(childStartTime);
+    // //create a moment object
+    var minAway;
+    //change the year so the first train comes before now
+    var firstNewTrain = moment(childStartTime, "hh:mm").subtract(1, "years");
+    //difference between the current and first train
+    var diffTime = moment().diff(moment(firstNewTrain), "minutes");
+    var remainder = diffTime % childFrequency;
+    //minutes until next train
+    minAway = childFrequency - remainder;
+    //next train time 
+    var nextTrain = moment().add(minAway, "minutes");
+    nextTrain = moment(nextTrain).format("hh:mm");
+    var newRow = `<tr>
+                    <td>${childName}</td>
+                    <td>${childDestination}</td>
+                    <td>${childFrequency}</td>
+                    <td>${nextTrain}</td>
+                    <td>${minAway} mins</td>
+    </tr>`
+    //append content to the display table
+    $("tbody").append(newRow);
 });
+
 
 
 
